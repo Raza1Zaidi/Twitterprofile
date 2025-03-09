@@ -14,35 +14,36 @@ from webdriver_manager.chrome import ChromeDriverManager
 # --- Install Chrome and Chromedriver on Render (Linux) ---
 def install_chrome():
     if not os.path.exists("/usr/bin/google-chrome"):
-        print("Installing Google Chrome...")
-        subprocess.run("wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb", shell=True)
-        subprocess.run("sudo dpkg -i google-chrome-stable_current_amd64.deb", shell=True)
-        subprocess.run("sudo apt-get install -f -y", shell=True)
+        print("Installing Chrome...")
+        subprocess.run([
+            "wget", "-q", "-O", "/tmp/chrome.deb",
+            "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+        ])
+        subprocess.run(["apt", "install", "-y", "/tmp/chrome.deb"])
+    else:
+        print("Chrome is already installed.")
 
-    if not os.path.exists("/usr/bin/chromedriver"):
-        print("Installing ChromeDriver...")
-        subprocess.run("wget -q https://chromedriver.storage.googleapis.com/115.0.5790.102/chromedriver_linux64.zip", shell=True)
-        subprocess.run("unzip -o chromedriver_linux64.zip", shell=True)
-        subprocess.run("sudo mv chromedriver /usr/bin/chromedriver", shell=True)
-        subprocess.run("sudo chmod +x /usr/bin/chromedriver", shell=True)
+install_chrome()
 
 # Run the installation (for Render deployment)
 install_chrome()
 
 # --- Selenium Functions ---
 def init_driver():
-    """Initialize a headless Chrome browser with Selenium Wire."""
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options = webdriver.ChromeOptions()
+    
+    # Use headless mode for Render
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")  # Fix for limited memory in cloud
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    
+    # Specify the correct Chrome binary location
+    chrome_options.binary_location = "/usr/bin/google-chrome"
 
-    # Automatically get the correct ChromeDriver version
+    # Use webdriver_manager to auto-download ChromeDriver
     service = Service(ChromeDriverManager().install())
-
     driver = webdriver.Chrome(service=service, options=chrome_options)
+    
     return driver
 
 def fetch_profile_metrics(driver, screen_name):
