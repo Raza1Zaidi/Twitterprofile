@@ -1,0 +1,8 @@
+flask
+gunicorn
+selenium
+selenium-wire
+undetected-chromedriver
+chromedriver-autoinstaller
+webdriver-manager
+blinker==1.4
