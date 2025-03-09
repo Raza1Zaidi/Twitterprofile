@@ -9,6 +9,7 @@ from flask import Flask, request, render_template_string
 from seleniumwire import webdriver  # Import from seleniumwire
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service  # Import Service for Selenium 4
+from webdriver_manager.chrome import ChromeDriverManager
 
 # --- Install Chrome and Chromedriver on Render (Linux) ---
 def install_chrome():
@@ -32,17 +33,15 @@ install_chrome()
 def init_driver():
     """Initialize a headless Chrome browser with Selenium Wire."""
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless")  # Run in headless mode
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument(
-        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-    )
-    
-    # Use the chromedriver path on Render
-    service = Service(executable_path="/usr/bin/chromedriver")
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Fix for limited memory in cloud
+
+    # Automatically get the correct ChromeDriver version
+    service = Service(ChromeDriverManager().install())
+
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
